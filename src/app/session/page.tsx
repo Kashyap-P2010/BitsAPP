@@ -85,7 +85,7 @@ function SessionContent() {
       }, 1000);
     }
     return () => clearInterval(timerRef.current!);
-  }, [sessionState === "active"]);
+  }, [sessionState === "active"]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentQuestion = questions[currentIdx];
   const progress = questions.length > 0 ? ((currentIdx) / questions.length) * 100 : 0;
@@ -152,7 +152,6 @@ function SessionContent() {
     setSessionState("finished");
   };
 
-  const timerPercent = (timeLeft / SESSION_DURATION) * 100;
   const timerColor = timeLeft < 300 ? "#f43f5e" : timeLeft < 600 ? "#f59e0b" : "#6366f1";
 
   // ---- LOADING ----
