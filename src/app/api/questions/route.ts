@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
           spacedRepetition: null,
           ...(topic ? { topic } : {}),
         },
+        include: { spacedRepetition: true },
         take: Math.ceil(limit * 0.3),
       });
     }
@@ -59,6 +60,7 @@ export async function GET(req: NextRequest) {
           id: { notIn: Array.from(attemptedIds) },
           ...(topic ? { topic } : {}),
         },
+        include: { spacedRepetition: true },
         orderBy: { difficulty: "asc" },
         take: Math.ceil(limit * 0.2),
       });
@@ -77,6 +79,7 @@ export async function GET(req: NextRequest) {
         ...(topic ? { topic } : {}),
         ...(mode === "mistakes" ? { id: { in: Array.from(mistakeIds) } } : {}),
       },
+      include: { spacedRepetition: true },
       take: limit - dueQuestions.length - mistakeQuestions.length - weakTopicQuestions.length,
     });
 
