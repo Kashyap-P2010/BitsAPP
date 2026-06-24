@@ -1,0 +1,97 @@
+// Prisma schema for BITSAT LR Grind
+// SQLite — local-first, no cloud
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Questions
+// ---------------------------------------------------------------------------
+model Question {
+  id          String   @id @default(cuid())
+  question    String
+  options     String   // JSON array of strings
+  answer      Int      // 0-indexed correct option
+  explanation String
+  topic       String
+  subtopic    String
+  difficulty  Int      @default(2) // 1=Easy 2=Medium 3=Hard
+  source_name String
+  source_url  String
+  image_url   String?  // for non-verbal reasoning questions
+  createdAt   DateTime @default(now())
+
+  attempts        Attempt[]
+  spacedRepetition SpacedRepetition?
+}
+
+// ---------------------------------------------------------------------------
+// Study Attempt
+// ---------------------------------------------------------------------------
+model Attempt {
+  id         String   @id @default(cuid())
+  questionId String
+  correct    Boolean
+  timeTaken  Int      // seconds
+  sessionId  String?
+  timestamp  DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id])
+  session  Session? @relation(fields: [sessionId], references: [id])
+}
+
+// ---------------------------------------------------------------------------
+// Study Session
+// ---------------------------------------------------------------------------
+model Session {
+  id                  String   @id @default(cuid())
+  duration            Int      // seconds actually studied
+  questionsAttempted  Int
+  correctAnswers      Int
+  accuracy            Float
+  mode                String   @default("daily") // daily|topic|weak|mistakes|mock
+  topic               String?  // if mode=topic
+  xpEarned            Int      @default(0)
+  timestamp           DateTime @default(now())
+
+  attempts Attempt[]
+}
+
+// ---------------------------------------------------------------------------
+// Spaced Repetition (SM-2)
+// ---------------------------------------------------------------------------
+model SpacedRepetition {
+  id           String   @id @default(cuid())
+  questionId   String   @unique
+  interval     Int      @default(1)    // days until next review
+  ease         Float    @default(2.5)  // ease factor
+  repetitions  Int      @default(0)
+  nextReview   DateTime @default(now())
+  lastAttempt  DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+// ---------------------------------------------------------------------------
+// User Stats (single row — no accounts)
+// ---------------------------------------------------------------------------
+model UserStats {
+  id              String   @id @default("singleton")
+  totalXp         Int      @default(0)
+  level           Int      @default(1)
+  streak          Int      @default(0)
+  longestStreak   Int      @default(0)
+  lastStudyDate   String?  // YYYY-MM-DD
+  totalMinutes    Int      @default(0)
+  totalQuestions  Int      @default(0)
+  totalCorrect    Int      @default(0)
+  bitsatDate      String   @default("2027-05-25") // target BITSAT date
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
